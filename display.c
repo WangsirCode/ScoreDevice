@@ -7,16 +7,26 @@
 
 #include "display.h"
 #include <xc.h>
+void screenOneSet(int value)
+{
+
+}
+
+void screenTwoSet(int value)
+{
+
+}
+
 void displayScreenSet(int num,int value)
 {
     switch(num)
     {
         case SCREEN_ONE:
-            PORTA = ScreenDecoder[value];
+            screenOneSet(value);
             score1 = value;
             break;
         case SCREEN_TWO:
-            PORTC = ScreenDecoder[value];
+            screenTwoSet(value);
             score2 = value;
             break;
         default:

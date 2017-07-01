@@ -106,8 +106,10 @@ void initiliazition()
 }
 void endGame()
 {
-
+    displayScreenSet(SCREEN_ONE,0);
+    displayScreenSet(SCREEN_TWO,0);
 }
+
 void  interrupt  ISR(void) 
 {
     //显示屏1
@@ -117,9 +119,9 @@ void  interrupt  ISR(void)
         if(PORTBbits.RB0 == 1)
         {
             int value = displayScreenGet(SCREEN_ONE);
-            if (++value == maxScore)
+            displayScreenSet(SCREEN_ONE,++value);
+            if (value == maxScore)
             {
-                displayScreenSet(SCREEN_ONE,value);
                 endGame(); 
             }
         }
@@ -132,9 +134,9 @@ void  interrupt  ISR(void)
         if(PORTBbits.RB1 == 1)
         {
             int value = displayScreenGet(SCREEN_TWO);
-            if (++value == maxScore)
+            displayScreenSet(SCREEN_TWO,++value);
+            if (value == maxScore)
             {
-                displayScreenSet(SCREEN_TWO,value);
                 endGame(); 
             }
         }
@@ -153,6 +155,12 @@ void  interrupt  ISR(void)
         else
         {
             maxScore = MODE_10;
+        }
+
+        //如果当前比分已经超过了最大比分，停止游戏
+        if(maxScore <= displayScreenGet(SCREEN_ONE) || maxScore <= displayScreenGet(SCREEN_ONE) )
+        {
+            endGame();
         }
     }
     
