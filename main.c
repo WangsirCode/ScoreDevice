@@ -27,10 +27,13 @@
 #pragma config LVP = ON         // Low-Voltage Programming Enable (Low-voltage programming enabled)
 
 int maxScore = 3;
+#define END_TIMES 8
 #define MODE_3 3
 #define MODE_10 10
 #include <xc.h>
+#include <stdint.h>
 #include "display.h"
+#define INSTR_CYCLE_DELAY 100000
 void initiliazition();
 void main(void) {
     initiliazition();
@@ -38,62 +41,56 @@ void main(void) {
     {
         
     }
-    return;
 }
 
 
 void initiliazition()
 {
-    //è®¾ç½®ScreenOneçš„ioå¼•è„š
+    //ÉèÖÃScreenOneµÄioÒı½Å
     PORTA = 0;
     ANSELA = 0;
     TRISA = 0;
     LATA = 0;
     
-    //è®¾ç½®ScreenTwoçš„ioå¼•è„š
+    //ÉèÖÃScreenTwoµÄioÒı½Å
     PORTC = 0;
     TRISC = 0;
     LATC = 0;
     
-    //åˆå§‹åŒ–portb
+    //³õÊ¼»¯portb
     ANSELB = 0;
     TRISB = 0;
     LATB = 0;
     
-    //ä¸­æ–­ä½¿èƒ½
+    //ÖĞ¶ÏÊ¹ÄÜ
     INTCONbits.GIE = 1;
     INTCONbits.PEIE = 1;
     INTCONbits.IOCIE = 1;
     
-    //è®¾ç½®å¼€å…³çš„ç”µå¹³ä¸­æ–­
-    TRISBbits.TRISB4 = 1;
-    IOCBPbits.IOCBP4 = 1;
-    IOCBNbits.IOCBN4 = 1;
-    
-    //è®¾ç½®å¤ä½æŒ‰é”®çš„ç”µå¹³ä¸­æ–­
+    //ÉèÖÃ¸´Î»°´¼üµÄµçÆ½ÖĞ¶Ï
     TRISBbits.TRISB3 = 1;
     IOCBPbits.IOCBP3 = 1;
     IOCBNbits.IOCBN3 = 1;
     
-    //è®¾ç½®é€‰æ‹©æ¨¡å¼çš„ioå¼•è„šå’Œç”µå¹³ä¸­æ–­
+    //ÉèÖÃÑ¡ÔñÄ£Ê½µÄioÒı½ÅºÍµçÆ½ÖĞ¶Ï
     TRISBbits.TRISB2 = 1;
     IOCBPbits.IOCBP2 = 1;
     IOCBNbits.IOCBN2 = 1;
     
-    //è®¾ç½®çº¢å¤–æ¥æ”¶ç®¡çš„ioå¼•è„šå’Œç”µå¹³ä¸­æ–­
+    //ÉèÖÃºìÍâ½ÓÊÕ¹ÜµÄioÒı½ÅºÍµçÆ½ÖĞ¶Ï
     TRISBbits.TRISB0 = 1;
-    IOCBPbits.IOCBP0 = 1;
+    IOCBPbits.IOCBP0 = 0;
     IOCBNbits.IOCBN0 = 1;
     
     TRISBbits.TRISB1 = 1;
-    IOCBPbits.IOCBP1 = 1;
+    IOCBPbits.IOCBP1 = 0;
     IOCBNbits.IOCBN1 = 1;
     
-    //è®¾ç½®ä¸¤ä¸ªscreençš„åˆå§‹å€¼ä¸º0
+    //ÉèÖÃÁ½¸öscreenµÄ³õÊ¼ÖµÎª0
     displayScreenSet(SCREEN_ONE,0);
     displayScreenSet(SCREEN_TWO,0);
     
-    //è®¾ç½®æ¨¡å¼
+    //ÉèÖÃÄ£Ê½
     if(PORTBbits.RB2 == 1)
     {
         maxScore = MODE_3;
@@ -106,32 +103,47 @@ void initiliazition()
 }
 void endGame()
 {
-    displayScreenSet(SCREEN_ONE,0);
-    displayScreenSet(SCREEN_TWO,0);
+    int i = 0;
+    for(; i < END_TIMES; i++)
+    {
+        displayScreenSet(SCREEN_ONE,10);
+        displayScreenSet(SCREEN_TWO,10);
+        _delay(INSTR_CYCLE_DELAY / 5);
+        displayScreenSet(SCREEN_ONE,0);
+        displayScreenSet(SCREEN_TWO,0);
+        _delay(INSTR_CYCLE_DELAY / 5);
+    }
+    
+    
 }
 
 void  interrupt  ISR(void) 
 {
-    //æ˜¾ç¤ºå±1
+    //ÏÔÊ¾ÆÁ1
     if(IOCBFbits.IOCBF0 == 1)
     {
         IOCBFbits.IOCBF0 = 0;
-        if(PORTBbits.RB0 == 1)
+        _delay(INSTR_CYCLE_DELAY / 100);
+        if(PORTBbits.RB0 == 0)
         {
             int value = displayScreenGet(SCREEN_ONE);
             displayScreenSet(SCREEN_ONE,++value);
+
             if (value == maxScore)
             {
                 endGame(); 
             }
+            _delay(INSTR_CYCLE_DELAY);
         }
     }
     
-    //æ˜¾ç¤ºå±2
+    //ÏÔÊ¾ÆÁ2
     if(IOCBFbits.IOCBF1 == 1)
     {
         IOCBFbits.IOCBF1 = 0;
-        if(PORTBbits.RB1 == 1)
+        INTCONbits.IOCIE = 0;
+        _delay(INSTR_CYCLE_DELAY / 100);
+        if(PORTBbits.RB1 == 0)
         {
             int value = displayScreenGet(SCREEN_TWO);
             displayScreenSet(SCREEN_TWO,++value);
@@ -139,14 +151,17 @@ void  interrupt  ISR(void)
             {
                 endGame(); 
             }
+            _delay(INSTR_CYCLE_DELAY * 3);
         }
+        INTCONbits.IOCIE = 1;
     }
     
-    //é€‰æ‹©æ¨¡å¼
+    //Ñ¡ÔñÄ£Ê½
     if(IOCBFbits.IOCBF2 == 1)
     {
         IOCBFbits.IOCBF2 = 0;
-        //è®¾ç½®æ¨¡å¼
+        _delay(INSTR_CYCLE_DELAY / 100);
+        //ÉèÖÃÄ£Ê½
         if(PORTBbits.RB2 == 1)
         {
             maxScore = MODE_3;
@@ -157,19 +172,22 @@ void  interrupt  ISR(void)
             maxScore = MODE_10;
         }
 
-        //å¦‚æœå½“å‰æ¯”åˆ†å·²ç»è¶…è¿‡äº†æœ€å¤§æ¯”åˆ†ï¼Œåœæ­¢æ¸¸æˆ
-        if(maxScore <= displayScreenGet(SCREEN_ONE) || maxScore <= displayScreenGet(SCREEN_ONE) )
+        //Èç¹ûµ±Ç°±È·ÖÒÑ¾­³¬¹ıÁË×î´ó±È·Ö£¬Í£Ö¹ÓÎÏ·
+        if(maxScore <= displayScreenGet(SCREEN_ONE) || maxScore <= displayScreenGet(SCREEN_TWO) )
         {
             endGame();
         }
     }
     
-    //å¤ä½
+    //¸´Î»
     if(IOCBFbits.IOCBF3 == 1)
     {
         IOCBFbits.IOCBF3 = 0;
+        INTCONbits.IOCIE = 0;
+        _delay(INSTR_CYCLE_DELAY / 100);
         displayScreenSet(SCREEN_ONE,0);
         displayScreenSet(SCREEN_TWO,0);
+        INTCONbits.IOCIE = 1;
     }
     
 }

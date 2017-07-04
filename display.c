@@ -6,27 +6,19 @@
  */
 
 #include "display.h"
+#include "led.h"
 #include <xc.h>
-void screenOneSet(int value)
-{
-
-}
-
-void screenTwoSet(int value)
-{
-
-}
 
 void displayScreenSet(int num,int value)
 {
     switch(num)
     {
         case SCREEN_ONE:
-            screenOneSet(value);
+            LED_Set(SCREEN_ONE,value);
             score1 = value;
             break;
         case SCREEN_TWO:
-            screenTwoSet(value);
+            LED_Set(SCREEN_TWO,value);
             score2 = value;
             break;
         default:
